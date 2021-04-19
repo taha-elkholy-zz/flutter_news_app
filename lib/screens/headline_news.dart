@@ -17,13 +17,19 @@ class _HeadLineNewsState extends State<HeadLineNews> with SingleTickerProviderSt
     super.initState();
     _tabController = TabController(initialIndex: 0, length: 3, vsync: this);
   }
+  // dispose the initialized TabController to save memory
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       // every screen has it's own appbar so that make one for every screen
       appBar: AppBar(
-        title: Text('News'),
+        title: Text('Headline News'),
         centerTitle: false, // because ios default title in  appbar center
         actions: [
           IconButton(
