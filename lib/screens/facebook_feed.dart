@@ -8,6 +8,14 @@ class FaceBookFeeds extends StatefulWidget {
 class _FaceBookFeedsState extends State<FaceBookFeeds> {
 
   var _hashTagStyle = TextStyle(color: Colors.orange.shade900);
+  List<int> ids = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // this should come from api
+    ids = [2, 5, 8];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +33,7 @@ class _FaceBookFeedsState extends State<FaceBookFeeds> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _drawHeader(),
+                _drawHeader(position),
                 _drawTitle(),
                 _drawHashTag(),
                 _drawBody(),
@@ -39,7 +47,7 @@ class _FaceBookFeedsState extends State<FaceBookFeeds> {
     );
   }
 
-  Widget _drawHeader() {
+  Widget _drawHeader(int position) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -49,7 +57,7 @@ class _FaceBookFeedsState extends State<FaceBookFeeds> {
               padding: const EdgeInsets.all(16),
               child: CircleAvatar(
                 backgroundImage:
-                ExactAssetImage('assets/images/placeholder_bg.png'),
+                    ExactAssetImage('assets/images/placeholder_bg.png'),
                 radius: 24,
               ),
             ),
@@ -80,10 +88,20 @@ class _FaceBookFeedsState extends State<FaceBookFeeds> {
             IconButton(
               icon: Icon(
                 Icons.favorite,
-                color: Colors.grey.shade400,
+                color: (ids.contains(position))
+                    ? Colors.red
+                    : Colors.grey.shade400,
                 size: 28,
               ),
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  if (ids.contains(position)) {
+                    ids.remove(position);
+                  } else {
+                    ids.add(position);
+                  }
+                });
+              },
             ),
             Transform.translate(
               offset: Offset(-10, 0),

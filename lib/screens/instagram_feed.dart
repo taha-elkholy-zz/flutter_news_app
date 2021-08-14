@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:news_app/jsonplaceholderapis/photos_api.dart';
+import 'package:news_app/models/photo.dart';
 import 'package:news_app/sharedui/navigation_drawer.dart';
+import 'package:news_app/utilities/data_utilities.dart';
 
 class InstagramFeed extends StatefulWidget {
   @override
@@ -7,8 +10,18 @@ class InstagramFeed extends StatefulWidget {
 }
 
 class _InstagramFeedState extends State<InstagramFeed> {
-
   var _hashTagStyle = TextStyle(color: Colors.orange.shade900);
+  List<int> ids = [];
+
+// get apis from json Placeholder site
+  PhotosAPI _photosAPI = PhotosAPI();
+
+  @override
+  void initState() {
+    super.initState();
+    // this should come from api
+    ids = [0, 2, 5];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +39,10 @@ class _InstagramFeedState extends State<InstagramFeed> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _drawHeader(),
+                _drawHeader(position),
                 _drawTitle(),
                 _drawHashTag(),
-                _drawBody(),
+                _drawBody(position),
                 _drawFooter(),
               ],
             ),
@@ -40,7 +53,7 @@ class _InstagramFeedState extends State<InstagramFeed> {
     );
   }
 
-  Widget _drawHeader() {
+  Widget _drawHeader(int position) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -50,7 +63,7 @@ class _InstagramFeedState extends State<InstagramFeed> {
               padding: const EdgeInsets.all(16),
               child: CircleAvatar(
                 backgroundImage:
-                ExactAssetImage('assets/images/placeholder_bg.png'),
+                    ExactAssetImage('assets/images/placeholder_bg.png'),
                 radius: 24,
               ),
             ),
@@ -81,10 +94,20 @@ class _InstagramFeedState extends State<InstagramFeed> {
             IconButton(
               icon: Icon(
                 Icons.favorite,
-                color: Colors.grey.shade400,
+                color: (ids.contains(position))
+                    ? Colors.red
+                    : Colors.grey.shade400,
                 size: 28,
               ),
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  if (ids.contains(position)) {
+                    ids.remove(position);
+                  } else {
+                    ids.add(position);
+                  }
+                });
+              },
             ),
             Transform.translate(
               offset: Offset(-10, 0),
@@ -139,27 +162,71 @@ class _InstagramFeedState extends State<InstagramFeed> {
     );
   }
 
-  Widget _drawBody() {
-    return SizedBox(
-      width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.25,
-      child: Image(
-        image: ExactAssetImage('assets/images/placeholder_bg.png'),
-        fit: BoxFit.cover,
-      ),
-    );
+  Widget _drawBody(int position) {
+    return FutureBuilder(
+        future: _photosAPI.fetchAllPhotos(),
+        // ignore: missing_return
+        builder: (context, AsyncSnapshot snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.none:
+              return DataUtilities().connectionError();
+              break;
+            case ConnectionState.waiting:
+              return DataUtilities().loading();
+              break;
+            case ConnectionState.active:
+              return DataUtilities().loading();
+              break;
+            case ConnectionState.done:
+              if (snapshot.hasError) {
+                return DataUtilities().error(snapshot.error);
+              } else {
+                if (snapshot.hasData) {
+                  List<Photo> photos = snapshot.data;
+                  return SizedBox(
+                    width: double.infinity,
+                    height: MediaQuery.of(context).size.height * 0.25,
+                    child: Image.network(
+                      photos[position].url,
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                } else {
+                  return DataUtilities().noData();
+                }
+              }
+              break;
+          }
+        });
   }
 
   Widget _drawFooter() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        TextButton(onPressed: (){}, child: Text('10 COMMENTS',style: _hashTagStyle,),),
-
+        TextButton(
+          onPressed: () {},
+          child: Text(
+            '10 COMMENTS',
+            style: _hashTagStyle,
+          ),
+        ),
         Row(
           children: [
-            TextButton(onPressed: (){}, child: Text('SHARE',style: _hashTagStyle,),),
-            TextButton(onPressed: (){}, child: Text('OPEN',style: _hashTagStyle,),),
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                'SHARE',
+                style: _hashTagStyle,
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                'OPEN',
+                style: _hashTagStyle,
+              ),
+            ),
           ],
         ),
       ],
